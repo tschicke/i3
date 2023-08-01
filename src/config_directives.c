@@ -564,6 +564,27 @@ CFGFUN(workspace, const char *workspace, const char *output) {
     TAILQ_INSERT_TAIL(&ws_assignments, assignment, ws_assignments);
 }
 
+CFGFUN(workspace_pinned, const char *workspace) {
+    bool found = false;
+    struct Workspace_Assignment *assignment;
+    TAILQ_FOREACH (assignment, &ws_assignments, ws_assignments) {
+        if (strcasecmp(assignment->name, workspace) == 0) {
+            found = true;
+            break;
+        }
+    }
+
+    /* Assignment does not yet exist, let's create it. */
+    if (!found) {
+        assignment = scalloc(1, sizeof(struct Workspace_Assignment));
+        assignment->name = sstrdup(workspace);
+        assignment->output = NULL;
+        TAILQ_INSERT_TAIL(&ws_assignments, assignment, ws_assignments);
+    }
+
+    assignment->pinned = true;
+}
+
 CFGFUN(ipc_socket, const char *path) {
     free(config.ipc_socket_path);
     config.ipc_socket_path = sstrdup(path);

@@ -333,6 +333,7 @@ state FOCUS_ON_WINDOW_ACTIVATION:
 
 # workspace <workspace> output <output>
 # workspace <workspace> gaps inner|outer <px>
+# workspace <workspace> pinned
 state WORKSPACE:
   workspace = word
     -> WORKSPACE_COMMAND
@@ -342,12 +343,18 @@ state WORKSPACE_COMMAND:
       -> WORKSPACE_OUTPUT_WORD
   'gaps'
       -> GAPS
+  'pinned'
+      -> WORKSPACE_PINNED
 
 state WORKSPACE_OUTPUT_WORD:
   output = word
       -> call cfg_workspace($workspace, $output); WORKSPACE_OUTPUT_WORD
   end
       -> INITIAL
+
+state WORKSPACE_PINNED:
+  end
+      -> call cfg_workspace_pinned($workspace); INITIAL
 
 # ipc-socket <path>
 state IPC_SOCKET:

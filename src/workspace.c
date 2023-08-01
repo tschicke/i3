@@ -113,6 +113,25 @@ Con *get_assigned_output(const char *name, long parsed_num) {
     return output;
 }
 
+bool workspace_is_pinned(const char *name, int parsed_num) {
+    struct Workspace_Assignment *assignment;
+    TAILQ_FOREACH (assignment, &ws_assignments, ws_assignments) {
+        if (!assignment->pinned) {
+            continue;
+        }
+
+        if (name && strcmp(assignment->name, name) == 0) {
+            return assignment->pinned;
+        } else if (parsed_num != -1 &&
+                   name_is_digits(assignment->name) &&
+                   ws_name_to_number(assignment->name) == parsed_num) {
+            return assignment->pinned;
+        }
+    }
+
+    return false;
+}
+
 /*
  * Returns true if the first output assigned to a workspace with the given
  * workspace assignment is the same as the given output.
@@ -527,7 +546,7 @@ void workspace_show(Con *workspace) {
      * client, which will clear the urgency flag too early. Also, there is no
      * way for con_focus() to know about when to clear urgency immediately and
      * when to defer it. */
-    if (old && TAILQ_EMPTY(&(old->nodes_head)) && TAILQ_EMPTY(&(old->floating_head))) {
+    if (old && TAILQ_EMPTY(&(old->nodes_head)) && TAILQ_EMPTY(&(old->floating_head)) && !workspace_is_pinned(old->name, ws_name_to_number(old->name))) {
         /* check if this workspace is currently visible */
         if (!workspace_is_visible(old)) {
             LOG("Closing old workspace (%p / %s), it is empty\n", old, old->name);
